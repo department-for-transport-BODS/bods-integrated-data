@@ -1,5 +1,4 @@
 import * as crypto from "node:crypto";
-import { Readable } from "node:stream";
 import * as cloudwatch from "@bods-integrated-data/shared/cloudwatch";
 import { KyselyDb } from "@bods-integrated-data/shared/database";
 import { getDate } from "@bods-integrated-data/shared/dates";
@@ -30,7 +29,6 @@ describe("avl-processor", () => {
     const mocks = vi.hoisted(() => {
         return {
             getS3Object: vi.fn(),
-            createLazyDownloadStreamFrom: vi.fn(),
         };
     });
 
@@ -45,7 +43,6 @@ describe("avl-processor", () => {
     vi.mock("@bods-integrated-data/shared/s3", async (importOriginal) => ({
         ...(await importOriginal<typeof import("@bods-integrated-data/shared/s3")>()),
         getS3Object: mocks.getS3Object,
-        createLazyDownloadStreamFrom: mocks.createLazyDownloadStreamFrom,
     }));
 
     vi.mock("@bods-integrated-data/shared/dynamo", () => ({
@@ -146,7 +143,7 @@ describe("avl-processor", () => {
                 }),
             };
 
-            mocks.createLazyDownloadStreamFrom.mockReturnValueOnce(Readable.from([Buffer.from(testSiri)]));
+            mocks.getS3Object.mockResolvedValueOnce({ Body: { transformToString: () => testSiri } });
             await processSqsRecord(
                 record as S3EventRecord,
                 dbClient as unknown as KyselyDb,
@@ -178,7 +175,7 @@ describe("avl-processor", () => {
             }),
         };
 
-        mocks.createLazyDownloadStreamFrom.mockReturnValueOnce(Readable.from([Buffer.from(testSiriWithOnwardCalls)]));
+        mocks.getS3Object.mockResolvedValueOnce({ Body: { transformToString: () => testSiriWithOnwardCalls } });
         await processSqsRecord(
             record as S3EventRecord,
             dbClient as unknown as KyselyDb,
@@ -208,10 +205,7 @@ describe("avl-processor", () => {
             }),
         };
 
-        mocks.createLazyDownloadStreamFrom.mockReturnValueOnce(
-            Readable.from([Buffer.from(testSiriWithCancellationsOnly)]),
-        );
-
+        mocks.getS3Object.mockResolvedValueOnce({ Body: { transformToString: () => testSiriWithCancellationsOnly } });
         await processSqsRecord(
             record as S3EventRecord,
             dbClient as unknown as KyselyDb,
@@ -241,10 +235,9 @@ describe("avl-processor", () => {
             }),
         };
 
-        mocks.createLazyDownloadStreamFrom.mockReturnValueOnce(
-            Readable.from([Buffer.from(testSiriWithLocationsAndCancellations)]),
-        );
-
+        mocks.getS3Object.mockResolvedValueOnce({
+            Body: { transformToString: () => testSiriWithLocationsAndCancellations },
+        });
         await processSqsRecord(
             record as S3EventRecord,
             dbClient as unknown as KyselyDb,
@@ -271,8 +264,7 @@ describe("avl-processor", () => {
             }),
         };
 
-        mocks.createLazyDownloadStreamFrom.mockReturnValueOnce(Readable.from([Buffer.from(testSiriWithDuplicates)]));
-
+        mocks.getS3Object.mockResolvedValueOnce({ Body: { transformToString: () => testSiriWithDuplicates } });
         await processSqsRecord(
             record as S3EventRecord,
             dbClient as unknown as KyselyDb,
@@ -287,7 +279,9 @@ describe("avl-processor", () => {
     });
 
     it("does not insert to database if invalid siri", async () => {
-        mocks.createLazyDownloadStreamFrom.mockReturnValueOnce(Readable.from([Buffer.from(testInvalidSiri)]));
+        mocks.getS3Object.mockResolvedValueOnce({
+            Body: { transformToString: () => testInvalidSiri },
+        });
 
         await processSqsRecord(
             record as S3EventRecord,
@@ -301,9 +295,9 @@ describe("avl-processor", () => {
     });
 
     it("does not insert to database if only invalid vehicle activities", async () => {
-        mocks.createLazyDownloadStreamFrom.mockReturnValueOnce(
-            Readable.from([Buffer.from(testSiriWithInvalidVehicleActivities)]),
-        );
+        mocks.getS3Object.mockResolvedValueOnce({
+            Body: { transformToString: () => testSiriWithInvalidVehicleActivities },
+        });
 
         await processSqsRecord(
             record as S3EventRecord,
@@ -334,9 +328,9 @@ describe("avl-processor", () => {
             }),
         };
 
-        mocks.createLazyDownloadStreamFrom.mockReturnValueOnce(
-            Readable.from([Buffer.from(testSiriWithValidAndInvalidData)]),
-        );
+        mocks.getS3Object.mockResolvedValueOnce({
+            Body: { transformToString: () => testSiriWithValidAndInvalidData },
+        });
 
         const timeToExist = getDate().add(3, "days").unix();
 
@@ -384,9 +378,9 @@ describe("avl-processor", () => {
     });
 
     it("uploads validation errors to dynamoDB when processing invalid data", async () => {
-        mocks.createLazyDownloadStreamFrom.mockReturnValueOnce(
-            Readable.from([Buffer.from(testSiriWithInvalidVehicleActivities)]),
-        );
+        mocks.getS3Object.mockResolvedValueOnce({
+            Body: { transformToString: () => testSiriWithInvalidVehicleActivities },
+        });
 
         await processSqsRecord(
             record as S3EventRecord,

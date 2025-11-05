@@ -10,7 +10,7 @@ import { getAvlSubscription } from "@bods-integrated-data/shared/avl/utils";
 import { getDate } from "@bods-integrated-data/shared/dates";
 import { putDynamoItem } from "@bods-integrated-data/shared/dynamo";
 import { errorMapWithDataLogging, logger, withLambdaRequestTracker } from "@bods-integrated-data/shared/logger";
-import { startS3Upload } from "@bods-integrated-data/shared/s3";
+import { putS3Object } from "@bods-integrated-data/shared/s3";
 import {
     AvlSubscription,
     HeartbeatNotification,
@@ -63,9 +63,12 @@ const uploadSiriVmToS3 = async (xml: string, bucketName: string, subscription: A
 
     const currentTime = getDate().toISOString();
 
-    const s3Upload = startS3Upload(bucketName, `${subscription.PK}/${currentTime}.xml`, xml, "application/xml");
-
-    await s3Upload.done();
+    await putS3Object({
+        Bucket: bucketName,
+        Key: `${subscription.PK}/${currentTime}.xml`,
+        ContentType: "application/xml",
+        Body: xml,
+    });
 
     await putDynamoItem(tableName, subscription.PK, "SUBSCRIPTION", {
         ...subscription,

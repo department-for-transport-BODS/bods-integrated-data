@@ -1,5 +1,4 @@
 import { randomUUID } from "node:crypto";
-import { buffer } from "node:stream/consumers";
 import {
     getAvlErrorDetails,
     getAvlSubscription,
@@ -11,7 +10,7 @@ import { getDate } from "@bods-integrated-data/shared/dates";
 import { putDynamoItems } from "@bods-integrated-data/shared/dynamo";
 import { addMatchingTripToAvl } from "@bods-integrated-data/shared/gtfs-rt/utils";
 import { errorMapWithDataLogging, logger, withLambdaRequestTracker } from "@bods-integrated-data/shared/logger";
-import { createLazyDownloadStreamFrom } from "@bods-integrated-data/shared/s3";
+import { getS3Object } from "@bods-integrated-data/shared/s3";
 import { siriSchemaTransformed } from "@bods-integrated-data/shared/schema";
 import { AvlValidationError } from "@bods-integrated-data/shared/schema/avl-validation-error.schema";
 import { S3Event, S3EventRecord, SQSHandler } from "aws-lambda";
@@ -100,13 +99,17 @@ export const processSqsRecord = async (
             throw new Error(`Unable to process AVL for subscription ${subscriptionId} because it is inactive`);
         }
 
-        const stream = createLazyDownloadStreamFrom(record.s3.bucket.name, record.s3.object.key);
+        const data = await getS3Object({
+            Bucket: record.s3.bucket.name,
+            Key: record.s3.object.key,
+        });
 
-        const body = (await buffer(stream)).toString();
+        const body = data.Body;
 
         if (body) {
+            const xml = await body.transformToString();
             const errors: AvlValidationError[] = [];
-            const { responseTimestamp, avls, avlCancellations } = parseXml(body, errors);
+            const { responseTimestamp, avls, avlCancellations } = parseXml(xml, errors);
 
             if (errors.length > 0) {
                 await uploadValidationErrorsToDatabase(
