@@ -1,3 +1,4 @@
+import { gzipSync } from "node:zlib";
 import * as dynamo from "@bods-integrated-data/shared/dynamo";
 import { logger } from "@bods-integrated-data/shared/logger";
 import { mockCallback, mockContext } from "@bods-integrated-data/shared/mockHandlerArgs";
@@ -369,4 +370,39 @@ describe("AVL-data-endpoint", () => {
             expect(dynamo.putDynamoItem).not.toHaveBeenCalledOnce();
         },
     );
+
+    it("Should add valid AVL data that is provided as a gzip to S3", async () => {
+        const subscription: AvlSubscription = {
+            PK: "411e4495-4a57-4d2f-89d5-cf105441f321",
+            url: "https://mock-data-producer.com/",
+            description: "test-description",
+            shortDescription: "test-short-description",
+            lastAvlDataReceivedDateTime: "2024-03-11T00:00:00.000Z",
+            status: "live",
+            requestorRef: null,
+            publisherId: "test-publisher-id",
+            apiKey: "mock-api-key",
+        };
+        getDynamoItemSpy.mockResolvedValue(subscription);
+        mockEvent.body = gzipSync(testSiriVmWithSingleVehicleActivity).toString("base64");
+        mockEvent.headers = {
+            "Content-Encoding": "gzip",
+        };
+
+        await expect(handler(mockEvent, mockContext, mockCallback)).resolves.toEqual({ statusCode: 200, body: "" });
+        expect(s3.putS3Object).toHaveBeenCalled();
+        expect(s3.putS3Object).toHaveBeenCalledWith({
+            Body: `${testSiriVmWithSingleVehicleActivity}`,
+            Bucket: "test-bucket",
+            ContentType: "application/xml",
+            Key: `${mockSubscriptionId}/2024-03-11T15:20:02.093Z.xml`,
+        });
+
+        expect(dynamo.putDynamoItem).toHaveBeenCalledWith<Parameters<typeof dynamo.putDynamoItem>>(
+            "test-dynamodb",
+            subscription.PK,
+            "SUBSCRIPTION",
+            { ...subscription, lastAvlDataReceivedDateTime: "2024-03-11T15:20:02.093Z" },
+        );
+    });
 });
