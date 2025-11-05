@@ -1,3 +1,4 @@
+import { gunzipSync } from "node:zlib";
 import {
     createHttpNotFoundErrorResponse,
     createHttpServerErrorResponse,
@@ -9,7 +10,7 @@ import { getAvlSubscription } from "@bods-integrated-data/shared/avl/utils";
 import { getDate } from "@bods-integrated-data/shared/dates";
 import { putDynamoItem } from "@bods-integrated-data/shared/dynamo";
 import { errorMapWithDataLogging, logger, withLambdaRequestTracker } from "@bods-integrated-data/shared/logger";
-import { putS3Object } from "@bods-integrated-data/shared/s3";
+import { startS3Upload } from "@bods-integrated-data/shared/s3";
 import {
     AvlSubscription,
     HeartbeatNotification,
@@ -62,12 +63,9 @@ const uploadSiriVmToS3 = async (xml: string, bucketName: string, subscription: A
 
     const currentTime = getDate().toISOString();
 
-    await putS3Object({
-        Bucket: bucketName,
-        Key: `${subscription.PK}/${currentTime}.xml`,
-        ContentType: "application/xml",
-        Body: xml,
-    });
+    const s3Upload = startS3Upload(bucketName, `${subscription.PK}/${currentTime}.xml`, xml, "application/xml");
+
+    await s3Upload.done();
 
     await putDynamoItem(tableName, subscription.PK, "SUBSCRIPTION", {
         ...subscription,
@@ -120,7 +118,18 @@ export const handler: APIGatewayProxyHandler & ALBHandler = async (
         }
 
         logger.subscriptionId = subscriptionId;
-        const body = requestBodySchema.parse(event.body);
+
+        let body = event.body;
+
+        const contentEncoding = event.headers?.["content-encoding"] || event.headers?.["Content-Encoding"];
+
+        if (contentEncoding?.toLowerCase() === "gzip" && body) {
+            logger.info("gzipped SIRI-VM message provided, beginning unzipping");
+            const buffer = Buffer.from(body, "base64");
+            body = gunzipSync(buffer).toString("utf-8");
+        }
+
+        const bodyContent = requestBodySchema.parse(body);
 
         const subscription = await getAvlSubscription(subscriptionId, tableName);
         const requestApiKey = event.queryStringParameters?.apiKey;
@@ -129,7 +138,7 @@ export const handler: APIGatewayProxyHandler & ALBHandler = async (
             throw new InvalidApiKeyError(`Invalid API key '${requestApiKey}' for subscription ID: ${subscriptionId}`);
         }
 
-        const xml = parseXml(body);
+        const xml = parseXml(bodyContent);
 
         if (xml?.Siri?.HeartbeatNotification) {
             await processHeartbeatNotification(heartbeatNotificationSchema.parse(xml), subscription, tableName);
@@ -156,7 +165,7 @@ export const handler: APIGatewayProxyHandler & ALBHandler = async (
             return createHttpSuccessResponse();
         }
 
-        await uploadSiriVmToS3(body, bucketName, subscription, tableName);
+        await uploadSiriVmToS3(bodyContent, bucketName, subscription, tableName);
         return createHttpSuccessResponse();
     } catch (e) {
         if (e instanceof ZodError) {

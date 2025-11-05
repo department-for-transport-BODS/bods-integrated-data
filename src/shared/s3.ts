@@ -81,7 +81,7 @@ export const putS3Object = (input: PutObjectCommandInput) =>
 export const startS3Upload = (
     bucket: string,
     key: string,
-    body: PassThrough | Uint8Array,
+    body: PassThrough | Uint8Array | string,
     contentType: string,
     queueSize = 4,
     partSize = 1024 * 1024 * 5,
