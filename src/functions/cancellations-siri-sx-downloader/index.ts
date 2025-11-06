@@ -64,7 +64,7 @@ export const handler: APIGatewayProxyHandler = async (event, context): Promise<A
         } = process.env;
 
         if (stage === "prod") {
-            createHttpValidationErrorResponse(["Invalid request"]);
+            return createHttpValidationErrorResponse(["Invalid request"]);
         }
 
         if (!bucketName) {
