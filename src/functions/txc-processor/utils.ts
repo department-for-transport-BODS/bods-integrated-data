@@ -272,7 +272,7 @@ export const getFirstNonZeroDuration = (durationStrings: (string | undefined)[])
 };
 
 export const isRequiredTndsDataset = (key: string) => {
-    return key.includes("/L/") || key.includes("/S/") || key.includes("/W/");
+    return key.includes("/S/") || key.includes("/W/");
 };
 
 export const isRequiredTndsServiceMode = (mode?: string) => {
