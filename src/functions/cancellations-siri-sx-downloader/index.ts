@@ -57,15 +57,8 @@ export const handler: APIGatewayProxyHandler = async (event, context): Promise<A
             return createHttpSuccessResponse();
         }
 
-        const {
-            STAGE: stage,
-            BUCKET_NAME: bucketName,
-            EXCLUDE_STAGECOACH_CANCELLATIONS: excludeStagecoachCancellations = "false",
-        } = process.env;
-
-        if (stage === "prod") {
-            return createHttpValidationErrorResponse(["Invalid request"]);
-        }
+        const { BUCKET_NAME: bucketName, EXCLUDE_STAGECOACH_CANCELLATIONS: excludeStagecoachCancellations = "false" } =
+            process.env;
 
         if (!bucketName) {
             throw new Error("Missing env vars - BUCKET_NAME must be set");
