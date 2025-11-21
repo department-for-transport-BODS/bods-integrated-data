@@ -27,12 +27,8 @@ const requestParamsSchema = z.preprocess(
     }),
 );
 
-const retrieveSiriSxData = async (
-    dbClient: KyselyDb,
-    subscriptionId?: string[],
-    excludeStagecoachCancellations = false,
-) => {
-    const situations = await getSituationsDataForSiriSx(dbClient, subscriptionId, excludeStagecoachCancellations);
+const retrieveSiriSxData = async (dbClient: KyselyDb, subscriptionId?: string[]) => {
+    const situations = await getSituationsDataForSiriSx(dbClient, subscriptionId);
     const requestMessageRef = randomUUID();
     const responseTime = getDate();
 
@@ -57,8 +53,7 @@ export const handler: APIGatewayProxyHandler = async (event, context): Promise<A
             return createHttpSuccessResponse();
         }
 
-        const { BUCKET_NAME: bucketName, EXCLUDE_STAGECOACH_CANCELLATIONS: excludeStagecoachCancellations = "false" } =
-            process.env;
+        const { BUCKET_NAME: bucketName } = process.env;
 
         if (!bucketName) {
             throw new Error("Missing env vars - BUCKET_NAME must be set");
@@ -73,7 +68,7 @@ export const handler: APIGatewayProxyHandler = async (event, context): Promise<A
         if (subscriptionId) {
             dbClient = dbClient || (await getDatabaseClient(process.env.STAGE === "local"));
 
-            siriSx = await retrieveSiriSxData(dbClient, subscriptionId, excludeStagecoachCancellations === "false");
+            siriSx = await retrieveSiriSxData(dbClient, subscriptionId);
         } else {
             siriSx = await retrieveSiriSxFile(bucketName, GENERATED_SIRI_SX_FILE_PATH);
         }
