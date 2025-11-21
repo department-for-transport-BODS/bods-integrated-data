@@ -21,8 +21,6 @@ import { CompleteSiriObject, SubscriptionIdNotFoundError, chunkArray, formatSiri
 
 export const GENERATED_SIRI_SX_FILE_PATH = "SIRI-SX.xml";
 
-export const STAGECOACH_SUBSCRIPTION_IDS = ["1692", "7035", "10058", "1695"];
-
 export const getCancellationsSubscriptions = async (tableName: string) => {
     const subscriptions = await recursiveScan({
         TableName: tableName,
@@ -167,31 +165,19 @@ export const generateSiriSxAndUploadToS3 = async (
     });
 };
 
-const getQueryForSituations = (
-    dbClient: KyselyDb,
-    subscriptionId?: string[],
-    excludeStagecoachCancellations = false,
-) => {
+const getQueryForSituations = (dbClient: KyselyDb, subscriptionId?: string[]) => {
     let query = dbClient.selectFrom("situation").distinctOn(["subscription_id", "situation_number"]).selectAll();
 
     if (subscriptionId) {
         query = query.where("subscription_id", "in", subscriptionId);
     }
 
-    if (excludeStagecoachCancellations) {
-        query = query.where("subscription_id", "not in", STAGECOACH_SUBSCRIPTION_IDS);
-    }
-
     return query.orderBy(["subscription_id", "situation_number", sql<string>`version DESC NULLS LAST`]);
 };
 
-export const getSituationsDataForSiriSx = async (
-    dbClient: KyselyDb,
-    subscriptionId?: string[],
-    excludeStagecoachCancellations = false,
-) => {
+export const getSituationsDataForSiriSx = async (dbClient: KyselyDb, subscriptionId?: string[]) => {
     try {
-        const query = getQueryForSituations(dbClient, subscriptionId, excludeStagecoachCancellations);
+        const query = getQueryForSituations(dbClient, subscriptionId);
 
         const situations = await query.execute();
 

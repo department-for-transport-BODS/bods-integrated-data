@@ -386,7 +386,6 @@ module "integrated_data_cancellations_pipeline" {
   cancellations_subscription_table_name = module.integrated_data_cancellations_data_producer_api.subscriptions_table_name
   cancellations_errors_table_name       = module.integrated_data_cancellations_data_producer_api.errors_table_name
   siri_sx_generator_frequency           = 30
-  exclude_stagecoach_cancellations      = false
 }
 
 module "integrated_data_cancellations_data_producer_api" {

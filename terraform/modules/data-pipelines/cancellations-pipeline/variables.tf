@@ -76,9 +76,3 @@ variable "cancellations_errors_table_name" {
   type        = string
   description = "Cancellations errors DynamoDB table name"
 }
-
-variable "exclude_stagecoach_cancellations" {
-  type        = bool
-  description = "Whether to exclude Stagecoach cancellations from SIRI-SX output"
-  default     = true
-}

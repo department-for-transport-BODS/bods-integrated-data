@@ -113,7 +113,7 @@ describe("cancellations-siri-sx-downloader-endpoint", () => {
                     body: expect.any(String),
                 });
 
-                expect(getSituationsDataForSiriSxMock).toHaveBeenCalledWith(mocks.mockDbClient, ["1", "2", "3"], true);
+                expect(getSituationsDataForSiriSxMock).toHaveBeenCalledWith(mocks.mockDbClient, ["1", "2", "3"]);
                 expect(logger.error).not.toHaveBeenCalled();
             });
         });
