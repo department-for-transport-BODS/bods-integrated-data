@@ -355,10 +355,50 @@
                             "Next": "Get TfL TXC Object Keys"
                         },
                         "Get TfL TXC Object Keys": {
-                            "Type": "Pass",
-                            "Next": "Retrieve BODS TXC Data",
-                            "ResultPath": null
-                        },
+              "Type": "Map",
+              "ItemProcessor": {
+                "ProcessorConfig": {
+                  "Mode": "DISTRIBUTED",
+                  "ExecutionType": "STANDARD"
+                },
+                "StartAt": "Process TfL TXC",
+                "States": {
+                  "Process TfL TXC": {
+                    "Type": "Task",
+                    "Resource": "arn:aws:states:::lambda:invoke",
+                    "Parameters": {
+                      "FunctionName": "${txc_processor_function_arn}:$LATEST",
+                      "Payload": {
+                        "Records": [
+                          {
+                            "s3": {
+                              "bucket": {
+                                "name": "${tfl_txc_bucket_name}"
+                              },
+                              "object": {
+                                "key.$": "$.Key"
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    "End": true
+                  }
+                }
+              },
+              "ItemReader": {
+                "Resource": "arn:aws:states:::s3:listObjectsV2",
+                "Parameters": {
+                  "Bucket": "${tfl_txc_bucket_name}",
+                  "Prefix.$": "$.prefix"
+                }
+              },
+              "MaxConcurrency": 50,
+              "ToleratedFailureCount": 10,
+              "Next": "Retrieve BODS TXC Data",
+              "ResultPath": null
+            },
                         "Retrieve BODS TXC Data": {
                             "Type": "Task",
                             "Resource": "arn:aws:states:::lambda:invoke",
