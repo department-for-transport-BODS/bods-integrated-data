@@ -342,7 +342,7 @@ module "integrated_data_gtfs_timetables_generator_function" {
   handler         = "index.exportHandler"
   runtime         = "nodejs20.x"
   timeout         = 900
-  memory          = 4096
+  memory          = 10240
   needs_db_access = var.environment != "local"
   vpc_id          = var.vpc_id
   subnet_ids      = var.private_subnet_ids
