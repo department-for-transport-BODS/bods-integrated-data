@@ -261,6 +261,42 @@ module "integrated_data_txc_processor_function" {
   }
 }
 
+module "integrated_data_gtfs_england_trip_table_creator_function" {
+  source = "../../shared/lambda-function"
+
+  environment     = var.environment
+  function_name   = "integrated-data-gtfs-england-trip-table-creator"
+  zip_path        = "${path.module}/../../../../src/functions/dist/gtfs-timetables-generator.zip"
+  handler         = "index.englandTripTableHandler"
+  runtime         = "nodejs20.x"
+  timeout         = 900
+  memory          = 4096
+  needs_db_access = var.environment != "local"
+  vpc_id          = var.vpc_id
+  subnet_ids      = var.private_subnet_ids
+  database_sg_id  = var.db_sg_id
+
+  permissions = [
+    {
+      Action = [
+        "secretsmanager:GetSecretValue",
+      ],
+      Effect = "Allow",
+      Resource = [
+        var.db_secret_arn,
+      ]
+    },
+  ]
+
+  env_vars = {
+    STAGE         = var.environment
+    DB_HOST       = var.db_host
+    DB_PORT       = var.db_port
+    DB_SECRET_ARN = var.db_secret_arn
+    DB_NAME       = var.db_name
+  }
+}
+
 module "integrated_data_gtfs_trip_table_creator_function" {
   source = "../../shared/lambda-function"
 
@@ -306,7 +342,7 @@ module "integrated_data_gtfs_timetables_generator_function" {
   handler         = "index.exportHandler"
   runtime         = "nodejs20.x"
   timeout         = 900
-  memory          = 2048
+  memory          = 10240
   needs_db_access = var.environment != "local"
   vpc_id          = var.vpc_id
   subnet_ids      = var.private_subnet_ids

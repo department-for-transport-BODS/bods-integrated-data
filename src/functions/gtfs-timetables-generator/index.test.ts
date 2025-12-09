@@ -1,6 +1,13 @@
 import { mockCallback, mockContext, mockEvent } from "@bods-integrated-data/shared/mockHandlerArgs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { createGtfsZip, exportHandler, ignoreEmptyFiles, tripTableHandler, zipHandler } from ".";
+import {
+    createGtfsZip,
+    englandTripTableHandler,
+    exportHandler,
+    ignoreEmptyFiles,
+    tripTableHandler,
+    zipHandler,
+} from ".";
 import { Files, GtfsFile } from "./data";
 
 describe("gtfs-timetables-generator", () => {
@@ -175,6 +182,7 @@ describe("gtfs-timetables-generator", () => {
             return {
                 createRegionalTripTable: vi.fn(),
                 createTripTable: vi.fn(),
+                createEnglandTripTable: vi.fn(),
                 queryBuilder: vi.fn().mockReturnValue([
                     {
                         fileName: "calendar",
@@ -198,6 +206,7 @@ describe("gtfs-timetables-generator", () => {
             ...(await importOriginal<typeof import("./data")>()),
             createRegionalTripTable: handlerMocks.createRegionalTripTable,
             createTripTable: handlerMocks.createTripTable,
+            createEnglandTripTable: handlerMocks.createEnglandTripTable,
             queryBuilder: handlerMocks.queryBuilder,
             exportDataToS3: handlerMocks.exportDataToS3,
             dropRegionalTripTable: handlerMocks.dropRegionalTripTable,
@@ -265,6 +274,14 @@ describe("gtfs-timetables-generator", () => {
                 expect(handlerMocks.createTripTable).not.toBeCalled();
                 expect(handlerMocks.dropRegionalTripTable).toBeCalledWith(handlerMocks.databaseClient, "Y");
                 expect(handlerMocks.createRegionalTripTable).toBeCalledWith(handlerMocks.databaseClient, "Y");
+            });
+
+            it("creates england trip table", async () => {
+                await englandTripTableHandler({}, mockContext, mockCallback);
+
+                expect(handlerMocks.createTripTable).not.toBeCalled();
+                expect(handlerMocks.dropRegionalTripTable).toBeCalledWith(handlerMocks.databaseClient, "E");
+                expect(handlerMocks.createEnglandTripTable).toBeCalledWith(handlerMocks.databaseClient);
             });
 
             it("creates GTFS zip", async () => {

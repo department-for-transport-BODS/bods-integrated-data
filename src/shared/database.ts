@@ -22,6 +22,8 @@ export const getDatabaseClient = async (isLocal = false, readOnly = false) => {
                     database: "bods_integrated_data",
                     user: "postgres",
                     password: "password",
+                    statement_timeout: 900000,
+                    query_timeout: 900000,
                 }),
             }),
         });

@@ -602,7 +602,7 @@
                                 }
                             },
                             "MaxConcurrency": 50,
-                            "ToleratedFailureCount": 10,
+                            "ToleratedFailureCount": 170,
                             "ResultPath": null,
                             "Next": "Run Table Renamer"
                         },
@@ -651,36 +651,11 @@
                         },
                         "Regional Trip Table Creation": {
                             "Type": "Parallel",
-                            "Next": "National GTFS",
+                            "Next": "Run England Trip Table Creator",
                             "Branches": [
                                 {
-                                    "StartAt": "Run England Trip Table Creator",
+                                    "StartAt": "Run London Trip Table Creator",
                                     "States": {
-                                        "Run England Trip Table Creator": {
-                                            "Type": "Task",
-                                            "Resource": "arn:aws:states:::lambda:invoke",
-                                            "OutputPath": "$.Payload",
-                                            "Parameters": {
-                                                "FunctionName": "${gtfs_timetables_trip_table_creator_function_arn}:$LATEST",
-                                                "Payload": {
-                                                    "regionCode": "E"
-                                                }
-                                            },
-                                            "Retry": [
-                                                {
-                                                    "ErrorEquals": [
-                                                        "Lambda.ServiceException",
-                                                        "Lambda.AWSLambdaException",
-                                                        "Lambda.SdkClientException",
-                                                        "Lambda.TooManyRequestsException"
-                                                    ],
-                                                    "IntervalSeconds": 1,
-                                                    "MaxAttempts": 3,
-                                                    "BackoffRate": 2
-                                                }
-                                            ],
-                                            "Next": "Run London Trip Table Creator"
-                                        },
                                         "Run London Trip Table Creator": {
                                             "Type": "Task",
                                             "Resource": "arn:aws:states:::lambda:invoke",
@@ -964,6 +939,30 @@
                                     }
                                 }
                             ]
+                        },
+                        "Run England Trip Table Creator": {
+                            "Type": "Task",
+                            "Resource": "arn:aws:states:::lambda:invoke",
+                            "OutputPath": "$.Payload",
+                            "Parameters": {
+                                "Payload.$": "$",
+                                "FunctionName": "${gtfs_timetables_england_trip_table_creator_function_arn}:$LATEST"
+                            },
+                            "Retry": [
+                                {
+                                    "ErrorEquals": [
+                                        "Lambda.ServiceException",
+                                        "Lambda.AWSLambdaException",
+                                        "Lambda.SdkClientException",
+                                        "Lambda.TooManyRequestsException"
+                                    ],
+                                    "IntervalSeconds": 1,
+                                    "MaxAttempts": 3,
+                                    "BackoffRate": 2,
+                                    "JitterStrategy": "FULL"
+                                }
+                            ],
+                            "Next": "National GTFS"
                         },
                         "National GTFS": {
                             "Type": "Task",

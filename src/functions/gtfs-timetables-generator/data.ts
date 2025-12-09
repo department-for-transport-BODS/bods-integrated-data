@@ -77,6 +77,47 @@ export const createRegionalTripTable = async (dbClient: KyselyDb, regionCode: Re
         .execute();
 };
 
+/**
+ * Creates the `trip_E` table for England by:
+ * 1. Creating the table with the same schema as `trip_ALL`.
+ * 2. Populating it with the union of all regional trip tables for England.
+ *
+ * The following regions are counted as England:
+ * - EA (East Anglia)
+ * - EM (East Midlands)
+ * - L  (London)
+ * - NE (North East)
+ * - NW (North West)
+ * - SE (South East)
+ * - SW (South West)
+ * - WM (West Midlands)
+ * - Y  (Yorkshire)
+ *
+ * This logic has been moved to its own function to avoid Lambda timeouts.
+ *
+ * @param dbClient - Kysely database client
+ */
+export const createEnglandTripTable = async (dbClient: KyselyDb) => {
+    await sql`CREATE TABLE ${sql.table("trip_E")} (LIKE ${sql.table("trip_ALL")} INCLUDING ALL)`.execute(dbClient);
+
+    await dbClient
+        .insertInto("trip_E")
+        .expression(
+            dbClient
+                .selectFrom("trip_EA")
+                .selectAll()
+                .union(dbClient.selectFrom("trip_EM").selectAll())
+                .union(dbClient.selectFrom("trip_L").selectAll())
+                .union(dbClient.selectFrom("trip_NE").selectAll())
+                .union(dbClient.selectFrom("trip_NW").selectAll())
+                .union(dbClient.selectFrom("trip_SE").selectAll())
+                .union(dbClient.selectFrom("trip_SW").selectAll())
+                .union(dbClient.selectFrom("trip_WM").selectAll())
+                .union(dbClient.selectFrom("trip_Y").selectAll()),
+        )
+        .execute();
+};
+
 export const exportDataToS3 = async (queries: Query[], outputBucket: string, dbClient: KyselyDb, filePath: string) => {
     await Promise.all(
         queries.map((query) => {
