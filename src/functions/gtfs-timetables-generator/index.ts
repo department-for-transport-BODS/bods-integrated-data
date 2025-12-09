@@ -16,6 +16,7 @@ import { z } from "zod";
 import {
     Files,
     GtfsFile,
+    createEnglandTripTable,
     createRegionalTripTable,
     createTripTable,
     dropRegionalTripTable,
@@ -123,6 +124,32 @@ export const tripTableHandler: Handler = async (event, context) => {
         }
 
         logger.info("GTFS Trip Table Creator successful");
+    } catch (e) {
+        if (e instanceof Error) {
+            logger.error(e, "There was a problem with the GTFS Timetable Generator");
+        }
+
+        throw e;
+    }
+};
+
+export const englandTripTableHandler: Handler = async (event, context) => {
+    withLambdaRequestTracker(event ?? {}, context ?? {});
+
+    const { STAGE: stage } = process.env;
+
+    dbClient = dbClient || (await getDatabaseClient(stage === "local"));
+
+    try {
+        logger.info("Starting GTFS England Trip Table Creator");
+
+        await dropRegionalTripTable(dbClient, "E");
+
+        logger.info("Creating regional trip table for region: E");
+
+        await createEnglandTripTable(dbClient);
+
+        logger.info("GTFS England Trip Table Creator successful");
     } catch (e) {
         if (e instanceof Error) {
             logger.error(e, "There was a problem with the GTFS Timetable Generator");
