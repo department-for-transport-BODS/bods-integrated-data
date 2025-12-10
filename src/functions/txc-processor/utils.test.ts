@@ -689,7 +689,7 @@ describe("utils", () => {
 
     describe("isRequiredTndsDataset", () => {
         it.each([
-            ["/L/", true],
+            ["/L/", false],
             ["/S/", true],
             ["/W/", true],
             ["L", false],
