@@ -220,9 +220,6 @@ run-local-gtfs-timetables-trip-mapper:
 run-local-gtfs-downloader:
 	STAGE=local BUCKET_NAME=${GTFS_ZIPPED_BUCKET_NAME} npx tsx -e "import {handler} from './src/functions/gtfs-downloader'; handler().then((response) => console.log(response)).catch(e => console.error(e))"
 
-run-local-gtfs-rt-generator:
-	STAGE=local BUCKET_NAME=${GTFS_RT_BUCKET_NAME} SAVE_JSON=true npx tsx -e "import {handler} from './src/functions/gtfs-rt-generator'; handler().catch(e => console.error(e))"
-
 # example usage with query params: make run-local-gtfs-rt-downloader GTFS_RT_DOWNLOADER_INPUT="{ queryStringParameters: { routeId: '1,2', startTimeAfter: 1712288820 } }"
 run-local-gtfs-rt-downloader:
 	STAGE=local BUCKET_NAME=${GTFS_RT_BUCKET_NAME} npx tsx -e "import {handler} from './src/functions/gtfs-rt-downloader'; handler(${GTFS_RT_DOWNLOADER_INPUT}).then(r => console.log(r)).catch(e => console.error(e))"
@@ -244,8 +241,8 @@ run-local-avl-retriever:
 run-local-avl-mock-data-producer-subscribe:
 	STAGE=local npx tsx -e "import {handler} from './src/functions/avl-mock-data-producer-subscribe'; handler().catch(e => console.error(e))"
 
-run-local-avl-mock-data-producer-send-data:
-	STAGE=local AVL_DATA_ENDPOINT="https://www.local.com" CANCELLATIONS_DATA_ENDPOINT="https://www.local.com" AVL_TABLE_NAME=${AVL_SUBSCRIPTION_TABLE_NAME} CANCELLATIONS_TABLE_NAME=${CANCELLATIONS_SUBSCRIPTION_TABLE_NAME} npx tsx -e "import {handler} from './src/functions/avl-mock-data-producer-send-data'; handler().catch(e => console.error(e))"
+run-local-mock-data-producer-send-data:
+	STAGE=local AVL_DATA_ENDPOINT="https://www.local.com" CANCELLATIONS_DATA_ENDPOINT="https://www.local.com" AVL_TABLE_NAME=${AVL_SUBSCRIPTION_TABLE_NAME} CANCELLATIONS_TABLE_NAME=${CANCELLATIONS_SUBSCRIPTION_TABLE_NAME} npx tsx -e "import {handler} from './src/functions/mock-data-producer-send-data'; handler().catch(e => console.error(e))"
 
 run-local-avl-mock-data-receiver:
 	STAGE=local npx tsx -e "import {handler} from './src/functions/avl-mock-data-receiver'; handler({ body: ${BODY} }).catch(console.error)"
