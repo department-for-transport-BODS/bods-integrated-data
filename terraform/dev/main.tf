@@ -350,18 +350,6 @@ module "integrated_data_timetables_sfn" {
   tfl_txc_sfn_name                                        = module.integrated_data_tfl_pipeline.tfl_txc_sfn_name
 }
 
-module "integrated_data_avl_datadog" {
-  source = "../modules/avl-datadog-monitoring"
-
-  environment     = local.env
-  datadog_api_key = local.secrets["datadog_api_key"]
-  datadog_app_key = local.secrets["datadog_app_key"]
-  project_name    = "integrated-data-avl"
-  thresholds      = {}
-  recovery        = {}
-  opt_out         = []
-}
-
 module "integrated_data_cancellations_pipeline" {
   source = "../modules/data-pipelines/cancellations-pipeline"
 
