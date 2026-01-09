@@ -447,18 +447,6 @@ module "siri_consumer_api_public" {
   gtfs_rt_service_alerts_downloader_lambda_name = module.integrated_data_gtfs_rt_pipeline.gtfs_rt_service_alerts_downloader_lambda_name
 }
 
-module "integrated_data_avl_datadog" {
-  source = "../modules/avl-datadog-monitoring"
-
-  environment     = local.env
-  datadog_api_key = local.secrets["datadog_api_key"]
-  datadog_app_key = local.secrets["datadog_app_key"]
-  project_name    = "integrated-data-avl"
-  thresholds      = {}
-  recovery        = {}
-  opt_out         = []
-}
-
 module "integrated_data_txc_analysis" {
   source = "../modules/txc-analysis"
 
