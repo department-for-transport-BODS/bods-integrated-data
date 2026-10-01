@@ -16,6 +16,7 @@ type CustomLogger = Logger & {
 
 export const logger = Pino(
     {
+        level: process.env.LOG_LEVEL || "info",
         mixin: (_mergeObject, _level, customLogger: CustomLogger) => ({
             filepath: customLogger.filepath,
             subscriptionId: customLogger.subscriptionId,
@@ -42,7 +43,7 @@ export const errorMapWithDataLogging: Parameters<typeof z.setErrorMap>[0] = (iss
     });
 
     if (!pathContainsPasswordField) {
-        logger.warn(`Zod error message="${ctx.defaultError}", path="${issue.path.join(".")}", data="${ctx.data}"`);
+        logger.debug(`Zod error message="${ctx.defaultError}", path="${issue.path.join(".")}", data="${ctx.data}"`);
     }
 
     return {
