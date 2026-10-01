@@ -53,6 +53,17 @@ variable "env_vars" {
   description = "Map of environment variables"
 }
 
+variable "log_level" {
+  type        = string
+  default     = "info"
+  description = "Pino log level for the function, set as the LOG_LEVEL environment variable"
+
+  validation {
+    condition     = contains(["trace", "debug", "info", "warn", "error", "fatal"], var.log_level)
+    error_message = "log_level must be one of: trace, debug, info, warn, error, fatal."
+  }
+}
+
 variable "needs_db_access" {
   type    = bool
   default = false

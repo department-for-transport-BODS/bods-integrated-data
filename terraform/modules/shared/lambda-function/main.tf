@@ -185,12 +185,10 @@ resource "aws_lambda_function" "function" {
     }
   }
 
-  dynamic "environment" {
-    for_each = var.env_vars != null ? [1] : []
-
-    content {
-      variables = var.env_vars
-    }
+  environment {
+    variables = merge(var.env_vars != null ? var.env_vars : {}, {
+      LOG_LEVEL = var.log_level
+    })
   }
 }
 
