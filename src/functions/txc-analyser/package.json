@@ -15,7 +15,7 @@
         "@bods-integrated-data/shared": "workspace:^",
         "fast-xml-parser": "^5.9.3",
         "object-hash": "^3.0.0",
-        "papaparse": "^5.4.1",
+        "papaparse": "^5.7.0",
         "zod": "3.25.76"
     },
     "devDependencies": {
