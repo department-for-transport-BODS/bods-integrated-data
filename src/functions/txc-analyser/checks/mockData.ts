@@ -744,8 +744,7 @@ export const mockTxcXmlParsed: PartialDeep<TxcSchema> = {
     },
 };
 
-export const mockNaptanStopsCsv = `
-ATCOCode,NaptanCode,PlateCode,CleardownCode,CommonName,CommonNameLang,ShortCommonName,ShortCommonNameLang,Landmark,LandmarkLang,Street,StreetLang,Crossing,CrossingLang,Indicator,IndicatorLang,Bearing,NptgLocalityCode,LocalityName,ParentLocalityName,GrandParentLocalityName,Town,TownLang,Suburb,SuburbLang,LocalityCentre,GridType,Easting,Northing,Longitude,Latitude,StopType,BusStopType,TimingStatus,DefaultWaitTime,Notes,NotesLang,AdministrativeAreaCode,CreationDateTime,ModificationDateTime,RevisionNumber,Modification,Status
+export const mockNaptanStopsCsv = `ATCOCode,NaptanCode,PlateCode,CleardownCode,CommonName,CommonNameLang,ShortCommonName,ShortCommonNameLang,Landmark,LandmarkLang,Street,StreetLang,Crossing,CrossingLang,Indicator,IndicatorLang,Bearing,NptgLocalityCode,LocalityName,ParentLocalityName,GrandParentLocalityName,Town,TownLang,Suburb,SuburbLang,LocalityCentre,GridType,Easting,Northing,Longitude,Latitude,StopType,BusStopType,TimingStatus,DefaultWaitTime,Notes,NotesLang,AdministrativeAreaCode,CreationDateTime,ModificationDateTime,RevisionNumber,Modification,Status
 SP1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,ABC,,,,,,A1,,,,,
 SP2,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,A2,,,,,
 SP3,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
