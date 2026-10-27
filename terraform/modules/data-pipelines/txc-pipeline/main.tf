@@ -145,7 +145,7 @@ module "integrated_data_tnds_txc_retriever_function" {
   handler       = "index.handler"
   runtime       = "nodejs24.x"
   timeout       = 120
-  memory        = 2048
+  memory        = 4096
 
   permissions = [{
     Action = [
