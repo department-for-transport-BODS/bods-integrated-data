@@ -1,4 +1,5 @@
 import { getDatabaseClient } from "@bods-integrated-data/shared/database";
+import { logger } from "@bods-integrated-data/shared/logger";
 import { describe, expect, it, vi } from "vitest";
 import { TableKey, checkTables, renameTables } from ".";
 
@@ -52,6 +53,17 @@ describe("table renamer", () => {
             await expect(checkTables(dbClient, tables)).rejects.toThrowError(
                 "Tables trip and trip_new have less than an 60% match, percentage match: 50%",
             );
+        });
+
+        it("should only log a warning if match percentage is less than required and mode is warn", async () => {
+            const dbClient = await getDatabaseClient(true);
+            mockExecute.mockResolvedValueOnce([{ count: 50 }]);
+            vi.stubEnv("REQUIRED_PERCENTAGE_MODE", "warn");
+
+            await expect(checkTables(dbClient, tables)).resolves.not.toThrowError();
+            expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining("have less than an 60% match"));
+
+            vi.unstubAllEnvs();
         });
 
         it("should throw an error if new table is empty", async () => {

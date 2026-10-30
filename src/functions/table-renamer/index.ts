@@ -62,9 +62,13 @@ export const checkTables = async (dbClient: KyselyDb, tables: TableKey[]) => {
         const percentageResult = (Number(newCount.count) / Number(currentCount.count)) * 100;
 
         if (t.requiredPercentage && percentageResult < t.requiredPercentage) {
-            throw new Error(
-                `Tables ${table} and ${newTable} have less than an ${t.requiredPercentage}% match, percentage match: ${percentageResult}%`,
-            );
+            const message = `Tables ${table} and ${newTable} have less than an ${t.requiredPercentage}% match, percentage match: ${percentageResult}%`;
+
+            if (process.env.REQUIRED_PERCENTAGE_MODE?.toLowerCase() === "warn") {
+                logger.warn(message);
+            } else {
+                throw new Error(message);
+            }
         }
 
         logger.info(`Table ${newTable} valid with ${newCount.count} rows`);

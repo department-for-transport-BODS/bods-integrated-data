@@ -47,5 +47,6 @@ module "integrated_data_table_renamer_function" {
     TRIP_REQUIRED_PERCENTAGE          = var.trip_required_percentage
     FREQUENCY_REQUIRED_PERCENTAGE     = var.frequency_required_percentage
     STOP_TIME_REQUIRED_PERCENTAGE     = var.stop_time_required_percentage
+    REQUIRED_PERCENTAGE_MODE          = var.required_percentage_mode
   }
 }

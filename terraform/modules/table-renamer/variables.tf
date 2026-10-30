@@ -71,3 +71,14 @@ variable "stop_time_required_percentage" {
   type    = number
   default = 70
 }
+
+variable "required_percentage_mode" {
+  type        = string
+  description = "kill fails the lambda when a table is below its required percentage, warn only logs a warning"
+  default     = "warn"
+
+  validation {
+    condition     = contains(["kill", "warn"], var.required_percentage_mode)
+    error_message = "required_percentage_mode must be kill or warn"
+  }
+}
