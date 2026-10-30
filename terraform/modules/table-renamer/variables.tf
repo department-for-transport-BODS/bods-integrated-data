@@ -36,3 +36,38 @@ variable "db_name" {
   type    = string
   default = "bods_integrated_data"
 }
+
+variable "calendar_required_percentage" {
+  type    = number
+  default = 70
+}
+
+variable "calendar_date_required_percentage" {
+  type    = number
+  default = 70
+}
+
+variable "stop_required_percentage" {
+  type    = number
+  default = 70
+}
+
+variable "shape_required_percentage" {
+  type    = number
+  default = 70
+}
+
+variable "trip_required_percentage" {
+  type    = number
+  default = 70
+}
+
+variable "frequency_required_percentage" {
+  type    = number
+  default = 70
+}
+
+variable "stop_time_required_percentage" {
+  type    = number
+  default = 70
+}

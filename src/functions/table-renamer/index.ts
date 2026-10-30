@@ -15,15 +15,22 @@ export interface TableKey {
     requiredPercentage?: number;
 }
 
+const requiredPercentage = (table: string) => Number(process.env[`${table.toUpperCase()}_REQUIRED_PERCENTAGE`] || 70);
+
 // Rename BODS related tables
 const databaseTables: TableKey[] = [
-    { table: "calendar", newTable: "calendar_new", key: "id", requiredPercentage: 70 },
-    { table: "calendar_date", newTable: "calendar_date_new", key: "id", requiredPercentage: 70 },
-    { table: "stop", newTable: "stop_new", key: "id", requiredPercentage: 70 },
-    { table: "shape", newTable: "shape_new", key: "id", requiredPercentage: 70 },
-    { table: "trip", newTable: "trip_new", key: "id", requiredPercentage: 70 },
-    { table: "frequency", newTable: "frequency_new", key: "id", requiredPercentage: 70 },
-    { table: "stop_time", newTable: "stop_time_new", key: "id", requiredPercentage: 70 },
+    { table: "calendar", newTable: "calendar_new", key: "id", requiredPercentage: requiredPercentage("calendar") },
+    {
+        table: "calendar_date",
+        newTable: "calendar_date_new",
+        key: "id",
+        requiredPercentage: requiredPercentage("calendar_date"),
+    },
+    { table: "stop", newTable: "stop_new", key: "id", requiredPercentage: requiredPercentage("stop") },
+    { table: "shape", newTable: "shape_new", key: "id", requiredPercentage: requiredPercentage("shape") },
+    { table: "trip", newTable: "trip_new", key: "id", requiredPercentage: requiredPercentage("trip") },
+    { table: "frequency", newTable: "frequency_new", key: "id", requiredPercentage: requiredPercentage("frequency") },
+    { table: "stop_time", newTable: "stop_time_new", key: "id", requiredPercentage: requiredPercentage("stop_time") },
     { table: "noc_operator", newTable: "noc_operator_new", key: "noc" },
     { table: "naptan_stop", newTable: "naptan_stop_new", key: "atco_code" },
     { table: "naptan_stop_area", newTable: "naptan_stop_area_new", key: "stop_area_code" },
