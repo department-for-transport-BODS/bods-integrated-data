@@ -131,6 +131,14 @@ module "integrated_data_table_renamer" {
   db_secret_arn      = module.integrated_data_aurora_db.db_secret_arn
   db_sg_id           = module.integrated_data_aurora_db.db_sg_id
   db_host            = module.integrated_data_aurora_db.db_host
+
+  calendar_required_percentage      = 70
+  calendar_date_required_percentage = 70
+  stop_required_percentage          = 70
+  shape_required_percentage         = 70
+  trip_required_percentage          = 70
+  frequency_required_percentage     = 70
+  stop_time_required_percentage     = 70
 }
 
 module "integrated_data_naptan_pipeline" {

@@ -36,3 +36,49 @@ variable "db_name" {
   type    = string
   default = "bods_integrated_data"
 }
+
+variable "calendar_required_percentage" {
+  type    = number
+  default = 70
+}
+
+variable "calendar_date_required_percentage" {
+  type    = number
+  default = 70
+}
+
+variable "stop_required_percentage" {
+  type    = number
+  default = 70
+}
+
+variable "shape_required_percentage" {
+  type    = number
+  default = 70
+}
+
+variable "trip_required_percentage" {
+  type    = number
+  default = 70
+}
+
+variable "frequency_required_percentage" {
+  type    = number
+  default = 70
+}
+
+variable "stop_time_required_percentage" {
+  type    = number
+  default = 70
+}
+
+variable "required_percentage_mode" {
+  type        = string
+  description = "kill fails the lambda when a table is below its required percentage, warn only logs a warning"
+  default     = "warn"
+
+  validation {
+    condition     = contains(["kill", "warn"], var.required_percentage_mode)
+    error_message = "required_percentage_mode must be kill or warn"
+  }
+}
