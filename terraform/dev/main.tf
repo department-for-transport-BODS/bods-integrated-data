@@ -77,7 +77,7 @@ module "integrated_data_aurora_db_dev" {
   private_hosted_zone_id   = module.integrated_data_route53.private_hosted_zone_id
   private_hosted_zone_name = module.integrated_data_route53.private_hosted_zone_name
   instance_class           = "db.r6g.large"
-  db_engine_version        = "16.11"
+  db_engine_version        = "16.13"
 }
 
 module "integrated_data_db_monitoring" {

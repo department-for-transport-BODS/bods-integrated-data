@@ -1,4 +1,4 @@
-import { Writable } from "node:stream";
+import { PassThrough } from "node:stream";
 import { getDate } from "@bods-integrated-data/shared/dates";
 import { errorMapWithDataLogging, logger, withLambdaRequestTracker } from "@bods-integrated-data/shared/logger";
 import { startS3Upload } from "@bods-integrated-data/shared/s3";
@@ -15,44 +15,42 @@ interface FtpCredentials {
     password: string;
 }
 
-const getZipFilesFromFTP = async (client: Client): Promise<Map<string, Uint8Array>> => {
-    const downloadedFiles: Map<string, Uint8Array> = new Map();
+const listTndsFileNames = async (client: Client): Promise<string[]> => {
     const allFiles = await client.list();
-    const zipFiles = allFiles.filter(
-        /**
-         * The NCSD.zip file, which represents coach data, is excluded because coach data is now retrieved from BODS.
-         * CSV files containing useful meta information have been temporarily included because we want to analyse them during the coach data integration work.
-         */
-        (file) => (file.name.includes(".zip") && file.name !== "NCSD.zip") || file.name.includes(".csv"),
-    );
 
-    for (const file of zipFiles) {
-        const chunks: Buffer[] = [];
-        const writableStream = new Writable({
-            write(chunk: Buffer, _encoding, callback) {
-                chunks.push(chunk);
-                callback();
-            },
-        });
-        await client.downloadTo(writableStream, file.name);
-        const buffer = Buffer.concat(chunks);
-        downloadedFiles.set(file.name, new Uint8Array(buffer));
-    }
-
-    return downloadedFiles;
+    return allFiles
+        .filter(
+            /**
+             * The NCSD.zip file, which represents coach data, is excluded because coach data is now retrieved from BODS.
+             * CSV files containing useful meta information have been temporarily included because we want to analyse them during the coach data integration work.
+             */
+            (file) => (file.name.includes(".zip") && file.name !== "NCSD.zip") || file.name.includes(".csv"),
+        )
+        .map((file) => file.name);
 };
 
-const uploadZipFilesToS3 = async (files: Map<string, Uint8Array>, bucket: string, prefix: string) => {
-    for (const [fileName, content] of files.entries()) {
-        const contentType = fileName.endsWith(".zip")
-            ? "application/zip"
-            : fileName.endsWith(".zip")
-              ? "text/csv"
-              : "text/plain";
-
-        const upload = startS3Upload(bucket, `${prefix}/${fileName}`, content, contentType);
-        await upload.done();
+const getContentType = (fileName: string) => {
+    if (fileName.endsWith(".zip")) {
+        return "application/zip";
     }
+
+    if (fileName.endsWith(".csv")) {
+        return "text/csv";
+    }
+
+    return "text/plain";
+};
+
+const streamFileFromFtpToS3 = async (client: Client, fileName: string, bucket: string, prefix: string) => {
+    const body = new PassThrough();
+    const upload = startS3Upload(bucket, `${prefix}/${fileName}`, body, getContentType(fileName));
+
+    const download = client.downloadTo(body, fileName).catch((error: Error) => {
+        body.destroy(error);
+        throw error;
+    });
+
+    await Promise.all([download, upload.done()]);
 };
 
 const getTndsDataAndUploadToS3 = async (
@@ -70,11 +68,13 @@ const getTndsDataAndUploadToS3 = async (
             password,
         });
 
-        const zipFiles = await getZipFilesFromFTP(client);
+        const fileNames = await listTndsFileNames(client);
 
-        logger.info("Zip files recieved, uploading to S3");
+        logger.info(`Streaming ${fileNames.length} TNDS files from FTP to S3`);
 
-        await uploadZipFilesToS3(zipFiles, txcZippedBucketName, prefix);
+        for (const fileName of fileNames) {
+            await streamFileFromFtpToS3(client, fileName, txcZippedBucketName, prefix);
+        }
     } finally {
         client.close();
     }

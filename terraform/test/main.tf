@@ -78,7 +78,7 @@ module "integrated_data_aurora_db" {
   private_hosted_zone_name = module.integrated_data_route53.private_hosted_zone_name
   multi_az                 = false
   instance_class           = "db.r6g.xlarge"
-  db_engine_version        = "16.11"
+  db_engine_version        = "16.13"
 }
 
 module "integrated_data_db_monitoring" {
