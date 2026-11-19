@@ -133,7 +133,12 @@ describe("tfl-timetable-retriever", () => {
         // @ts-ignore mock S3Client
         vi.mocked(S3Client.prototype.send).mockResolvedValueOnce({
             CommonPrefixes: [{ Prefix: "Base_Version_20250426/" }],
-            Contents: [{ Key: "file1.zip" }, { Key: "file2.zip" }],
+            Contents: [
+                { Key: "Base_Version_20250426/UN/" },
+                { Key: "file1.zip" },
+                { Key: "Base_Version_20250426/notes.txt" },
+                { Key: "file2.zip" },
+            ],
         });
 
         // @ts-ignore mock S3Client
