@@ -143,9 +143,12 @@ export const handler: Handler = async (event, context): Promise<TflTimetableRetr
             Prefix: prefix,
         });
 
-        logger.info(`Retrieving ${tflTimetableObjects.objects.length} files`);
+        // Skip non-zip keys such as zero-byte folder markers (e.g. "Base_Version_X/UN/"), which fail in the unzipper
+        const zipObjects = tflTimetableObjects.objects.filter(({ Key }) => Key?.toLowerCase().endsWith(".zip"));
 
-        for await (const { Key } of tflTimetableObjects.objects) {
+        logger.info(`Retrieving ${zipObjects.length} files`);
+
+        for await (const { Key } of zipObjects) {
             if (Key) {
                 const object = await tflS3Client.send(
                     new GetObjectCommand({
