@@ -15,11 +15,6 @@ module "tf-state-dev" {
   environment = local.env
 }
 
- {
-  to = module.tf-state-deimportv.aws_s3_bucket.terraform_state
-  id = local.bucket_name
-}
-
 locals {
   bucket_name         = "integrated-data-tfstate-dev"
   dynamodb_table_name = "integrated-data-state-lock-dev"
