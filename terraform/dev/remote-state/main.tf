@@ -15,28 +15,6 @@ module "tf-state-dev" {
   environment = local.env
 }
 
-import {
-  to = module.tf-state-dev.aws_s3_bucket.terraform_state
-  id = local.bucket_name
-}
-
-import {
-  to = module.tf-state-dev.aws_s3_bucket_versioning.terraform_state
-  id = local.bucket_name
-}
-
-import {
-  to = module.tf-state-dev.aws_s3_bucket_public_access_block.public_access
-  id = local.bucket_name
-}
-
-import {
-  to = module.tf-state-dev.aws_dynamodb_table.terraform_state_lock
-  id = local.dynamodb_table_name
-}
-
 locals {
-  bucket_name         = "integrated-data-tfstate-dev"
-  dynamodb_table_name = "integrated-data-state-lock-dev"
-  env                 = "dev"
+  env = "dev"
 }

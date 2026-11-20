@@ -16,28 +16,6 @@ module "tf_state" {
   environment = local.env
 }
 
-import {
-  to = module.tf_state.aws_s3_bucket.terraform_state
-  id = local.bucket_name
-}
-
-import {
-  to = module.tf_state.aws_s3_bucket_versioning.terraform_state
-  id = local.bucket_name
-}
-
-import {
-  to = module.tf_state.aws_s3_bucket_public_access_block.public_access
-  id = local.bucket_name
-}
-
-import {
-  to = module.tf_state.aws_dynamodb_table.terraform_state_lock
-  id = local.dynamodb_table_name
-}
-
 locals {
-  bucket_name         = "integrated-data-tfstate-shared-services"
-  dynamodb_table_name = "integrated-data-state-lock-shared-services"
-  env                 = "shared-services"
+  env = "shared-services"
 }
