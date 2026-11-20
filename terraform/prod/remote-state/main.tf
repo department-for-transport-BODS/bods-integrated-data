@@ -16,7 +16,5 @@ module "tf_state" {
 }
 
 locals {
-  bucket_name         = "integrated-data-tfstate-prod"
-  dynamodb_table_name = "integrated-data-state-lock-prod"
-  env                 = "prod"
+  env = "prod"
 }

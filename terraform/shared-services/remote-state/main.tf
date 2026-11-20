@@ -17,7 +17,5 @@ module "tf_state" {
 }
 
 locals {
-  bucket_name         = "integrated-data-tfstate-shared-services"
-  dynamodb_table_name = "integrated-data-state-lock-shared-services"
-  env                 = "shared-services"
+  env = "shared-services"
 }
